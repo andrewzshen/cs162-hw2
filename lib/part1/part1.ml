@@ -9,9 +9,16 @@ let product (xs : 'a list) (ys : 'b list) : ('a * 'b) list list =
 
 let power (xs : 'a list) : 'a list list =
     List.fold_right
-        (fun x acc -> acc @ List.map (fun subset -> x::subset) acc)
+        (fun x acc -> acc @ (List.map (fun subset -> x::subset) acc))
         xs
         [[]]
 
 let both : 'a option -> 'b option -> ('a * 'b) option =
-    fun x -> match x with Some x -> todo () | None -> todo ()
+    fun x -> 
+        match x with 
+        | Some x -> 
+            (fun y ->
+                match y with
+                | Some y -> Some (x, y)
+                | None -> None)
+        | None -> (fun _ -> None)
