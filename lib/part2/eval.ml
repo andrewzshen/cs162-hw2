@@ -41,7 +41,7 @@ let rec subst (x : string) (e : expr) (c : expr) : expr =
     | Lambda binder ->
         let y, body = binder in
             Lambda
-                ( y,
+                (y,
                 if String.equal x y then
                     body
                 else
@@ -49,13 +49,13 @@ let rec subst (x : string) (e : expr) (c : expr) : expr =
     | App (c1, c2) -> App (subst x e c1, subst x e c2)
     | Let (c1, binder) ->
         Let
-            ( subst x e c1,
+            (subst x e c1,
             let y, body = binder in
                 ( y,
                     if String.equal x y then
                     body
                     else
-                    subst x e body ) )
+                    subst x e body))
 
 (** Evaluate expression e *)
 let rec eval (e : expr) : expr =
@@ -90,6 +90,33 @@ type sigma = (string * expr) list
 
 (** Perform simultaneous substitution c[sigma], i.e., substituting variables in c according to sigma *)
 let rec subst_multi (sigma : sigma) (c : expr) : expr = 
+    match c with
+    | Num n -> Num n
+    | Binop (op, c1, c2) -> Binop (op, subst_multi sigma c1, subst_multi sigma c2)
+    | Var y ->
+        let rec lookup (x : string) (s : sigma) : expr option = 
+            match s with
+            | [] -> None
+            | (y, e)::rest -> 
+                if String.equal x y then Some e else lookup x rest
+        in
+        (match lookup y sigma with
+        | Some e -> e
+        | None -> Var y)
+    | Lambda binder ->
+        let x, body = binder in
+        let sigma' = List.filter (fun (y, _) -> y <> x) sigma in
+        Lambda (x, subst_multi sigma' body)
+    | App (c1, c2) -> App (subst x e c1, subst x e c2)
+    | Let (c1, binder) ->
+        Let
+            (subst x e c1,
+            let y, body = binder in
+                ( y,
+                    if String.equal x y then
+                    body
+                    else
+                    subst x e body))
 
 (** Alpha-equivalence *)
 let alpha_equiv (e1 : expr) (e2 : expr) : bool = bonus ()
