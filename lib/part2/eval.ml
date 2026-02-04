@@ -33,29 +33,16 @@ let rec subst (x : string) (e : expr) (c : expr) : expr =
     match c with
     | Num n -> Num n
     | Binop (op, c1, c2) -> Binop (op, subst x e c1, subst x e c2)
-    | Var y ->
-        if x = y then
-            e
-        else
-            Var y
+    | Var y -> if x = y then e else Var y
     | Lambda binder ->
         let y, body = binder in
-            Lambda
-                (y,
-                if String.equal x y then
-                    body
-                else
-                    subst x e body )
+        Lambda (y, if String.equal x y then body else subst x e body )
     | App (c1, c2) -> App (subst x e c1, subst x e c2)
     | Let (c1, binder) ->
-        Let
-            (subst x e c1,
+        Let (subst x e c1,
             let y, body = binder in
-                ( y,
-                    if String.equal x y then
-                    body
-                    else
-                    subst x e body))
+            let body' = if String.equal x y then body else subst x e body in 
+            (y, body'))
 
 (** Evaluate expression e *)
 let rec eval (e : expr) : expr =
@@ -114,5 +101,4 @@ let rec subst_multi (sigma : sigma) (c : expr) : expr =
             (x, subst_multi sigma' body)) 
 
 (** Alpha-equivalence *)
-let alpha_equiv (e1 : expr) (e2 : expr) : bool = bonus ()
-
+let alpha_equiv (e1 : expr) (e2 : expr) : bool = todo ()
