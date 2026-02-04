@@ -97,26 +97,22 @@ let rec subst_multi (sigma : sigma) (c : expr) : expr =
         let rec lookup (x : string) (s : sigma) : expr option = 
             match s with
             | [] -> None
-            | (y, e)::rest -> 
-                if String.equal x y then Some e else lookup x rest
+            | (y, e)::rest -> if String.equal x y then Some e else lookup x rest
         in
         (match lookup y sigma with
         | Some e -> e
         | None -> Var y)
     | Lambda binder ->
         let x, body = binder in
-        let sigma' = List.filter (fun (y, _) -> y <> x) sigma in
+        let sigma' = List.filter (fun (y, _) -> not (String.equal x y)) sigma in
         Lambda (x, subst_multi sigma' body)
-    | App (c1, c2) -> App (subst x e c1, subst x e c2)
+    | App (c1, c2) -> App (subst_multi sigma c1, subst_multi sigma c2)
     | Let (c1, binder) ->
-        Let
-            (subst x e c1,
-            let y, body = binder in
-                ( y,
-                    if String.equal x y then
-                    body
-                    else
-                    subst x e body))
+        Let (subst_multi sigma c1,
+            let x, body = binder in
+            let sigma' = List.filter (fun (y, _) -> not (String.equal x y)) sigma in
+            (x, subst_multi sigma' body)) 
 
 (** Alpha-equivalence *)
 let alpha_equiv (e1 : expr) (e2 : expr) : bool = bonus ()
+

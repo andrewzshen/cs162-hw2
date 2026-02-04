@@ -8,10 +8,7 @@ let product (xs : 'a list) (ys : 'b list) : ('a * 'b) list list =
     List.map (fun x -> List.map (fun y -> (x, y)) ys) xs 
 
 let power (xs : 'a list) : 'a list list =
-    List.fold_right
-        (fun x acc -> acc @ (List.map (fun subset -> x::subset) acc))
-        xs
-        [[]]
+    List.fold_right (fun x acc -> acc @ (List.map (fun sub -> x::sub) acc)) xs [[]]
 
 let both : 'a option -> 'b option -> ('a * 'b) option =
     fun x -> 
